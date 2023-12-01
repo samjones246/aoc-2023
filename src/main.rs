@@ -2,7 +2,7 @@ use std::{fs::{self}, env};
 
 mod day1;
 
-type Solution = fn(Vec<String>) -> String;
+type Solution = fn(Vec<String>) -> (String, String);
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -11,10 +11,11 @@ fn main() {
     let input = load_input(fname);
     let solution: Solution = match day.as_str() {
         "1" => day1::solution,
-        _ => |_| String::new()
+        _ => |_| (String::new(), String::new())
     };
-    let result = solution(input);
-    println!("{result}")
+    let (part1, part2) = solution(input);
+    println!("Part 1: {part1}");
+    println!("Part 2: {part2}");
 }
 
 fn load_input(fname: String) -> Vec<String> {
