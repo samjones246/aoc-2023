@@ -2,6 +2,7 @@ use std::{fs::{self}, env};
 
 mod day1;
 mod day2;
+mod day3;
 
 type Solution = fn(Vec<String>) -> (String, String);
 
@@ -13,6 +14,7 @@ fn main() {
     let solution: Solution = match day.as_str() {
         "1" => day1::solution,
         "2" => day2::solution,
+        "3" => day3::solution,
         _ => |_| (String::new(), String::new())
     };
     let (part1, part2) = solution(input);
