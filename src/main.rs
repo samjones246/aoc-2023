@@ -3,6 +3,7 @@ use std::{fs::{self}, env};
 mod day1;
 mod day2;
 mod day3;
+mod day4;
 
 type Solution = fn(Vec<String>) -> (String, String);
 
@@ -15,6 +16,7 @@ fn main() {
         "1" => day1::solution,
         "2" => day2::solution,
         "3" => day3::solution,
+        "4" => day4::solution,
         _ => |_| (String::new(), String::new())
     };
     let (part1, part2) = solution(input);
