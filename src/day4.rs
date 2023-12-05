@@ -17,7 +17,6 @@ fn part1(input: &Vec<String>) -> String {
 }
 
 fn part2(input: &Vec<String>) -> String {
-    let mut result = 0;
     let num_unique_cards = input.len();
     let mut card_counts = vec![1_usize; num_unique_cards];
     for (index, line) in input.iter().enumerate() {
