@@ -6,6 +6,7 @@ mod day3;
 mod day4;
 mod day5;
 mod day6;
+mod day7;
 
 type Solution = fn(Vec<String>) -> (String, String);
 
@@ -21,6 +22,7 @@ fn main() {
         "4" => day4::solution,
         "5" => day5::solution,
         "6" => day6::solution,
+        "7" => day7::solution,
         _ => |_| (String::new(), String::new())
     };
     let (part1, part2) = solution(input);
