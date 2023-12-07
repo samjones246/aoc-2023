@@ -1,4 +1,5 @@
-use std::{collections::HashMap, cmp::Ordering};
+use std::{collections::{HashMap, HashSet}, cmp::Ordering};
+use itertools::{Itertools, repeat_n};
 
 pub fn solution(input: Vec<String>) -> (String, String) {
     return (part1(&input), part2(&input));
@@ -16,12 +17,17 @@ fn part1(input: &Vec<String>) -> String {
 
 fn part2(input: &Vec<String>) -> String {
     let mut result = 0;
-
+    let mut hands: Vec<Hand> = input.iter().map(|l| Hand::from(l)).collect();
+    hands.sort();
+    for (i, hand) in hands.iter().enumerate() {
+        result += hand.bid * (i+1) as u32;
+    }
     return result.to_string();
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy)]
 enum Card {
+    Jack,
     Two,
     Three,
     Four,
@@ -31,7 +37,6 @@ enum Card {
     Eight,
     Nine,
     Ten,
-    Jack,
     Queen,
     King,
     Ace,
@@ -58,7 +63,7 @@ impl Card {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
 enum HandType {
     HighCard = 0,
     OnePair = 1,
@@ -104,7 +109,25 @@ impl Hand {
     fn from(line: &String) -> Hand {
         let parts: Vec<&str> = line.split(" ").collect();
         let cards: Vec<Card> = parts[0].chars().map(|c| Card::from(c)).collect();
-        let hand_type = HandType::of(&cards);
+        let without_jacks: Vec<Card> = cards.iter().filter_map(|c| if *c != Card::Jack { Some(c.to_owned()) } else { None }).collect();
+        let hand_type: HandType = if without_jacks.len() == 5 {
+            HandType::of(&cards)
+        } else if without_jacks.len() == 0 {
+            HandType::FiveOfAKind
+        } else {
+            let distinct: HashSet<Card> = HashSet::from_iter(without_jacks.clone());
+            let options = repeat_n(distinct.iter(), 5 - without_jacks.len()).multi_cartesian_product()
+                .map(|p| {
+                    let mut v: Vec<Card> = Vec::new();
+                    v.extend(without_jacks.clone());
+                    v.extend(p);
+                    v
+                })
+                .collect_vec();
+            let hand_types = options.iter().map(|cs| HandType::of(&cs));
+            let result = hand_types.clone().max().unwrap();
+            result
+        };
         let bid: u32 = parts[1].parse().unwrap();
         Hand { cards, hand_type, bid }
     }
@@ -157,5 +180,20 @@ mod test {
         let result = part1(&input);
 
         assert_eq!(result, "6440");
+    }
+
+    #[test]
+    fn test_part2_basic() {
+        let input = vec![
+            String::from("32T3K 765"),
+            String::from("T55J5 684"),
+            String::from("KK677 28"),
+            String::from("KTJJT 220"),
+            String::from("QQQJA 483"),
+        ];
+
+        let result = part2(&input);
+
+        assert_eq!(result, "5905");
     }
 }
