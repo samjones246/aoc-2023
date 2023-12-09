@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
+use num::Integer;
 use regex::Regex;
 
 lazy_static! {
@@ -23,13 +24,33 @@ fn part1(input: &Vec<String>) -> String {
         nodes.insert(name, node);
     }
 
-    let result = navigate(path, nodes, "AAA", "ZZZ");
+    let result = navigate(&path, &nodes, "AAA", true);
 
     return result.to_string();
 }
 
 fn part2(input: &Vec<String>) -> String {
-    return String::new();
+    let path = input[0].chars().map(|c| Direction::from(c)).collect_vec();
+    let mut nodes: HashMap<&str, Node> = HashMap::new();
+
+    let haystack = &input[2..].join("\n");
+    let mut starts = Vec::new();
+
+    for (_, [name, left, right]) in RE_NODE.captures_iter(&haystack).map(|c| c.extract()) {
+        let node = Node { name, left, right };
+        if name.ends_with("A") {
+            starts.push(name);
+        }
+        nodes.insert(name, node);
+    }
+
+    let result = starts.iter().map(|start|
+        navigate(&path, &nodes, start, false) as u64
+    )
+    .reduce(|a,b| a.lcm(&b))
+    .unwrap();
+
+    return result.to_string();
 }
 
 struct Node<'a> {
@@ -54,11 +75,13 @@ impl Direction {
     }
 }
 
-fn navigate(path: Vec<Direction>, nodes: HashMap<&str, Node>, start: &str, end: &str) -> i32 {
+fn navigate(path: &Vec<Direction>, nodes: &HashMap<&str, Node>, start: &str, all_z: bool) -> i32 {
     let mut step = 0;
     let mut node = &nodes[start];
 
-    while node.name != end {
+    let done = |n: &Node| if all_z { n.name == "ZZZ" } else { n.name.ends_with("Z") };
+
+    while !done(node) {
         let direction = &path[step % path.len()];
         step += 1;
         let target = if *direction == Direction::LEFT { node.left } else { node.right };
@@ -102,6 +125,26 @@ mod test {
         ];
 
         let result = part1(&input);
+
+        assert_eq!(result, "6");
+    }
+
+    #[test]
+    fn test_part2_basic() {
+        let input = vec![
+            String::from("LR"),
+            String::from(""),
+            String::from("11A = (11B, XXX)"),
+            String::from("11B = (XXX, 11Z)"),
+            String::from("11Z = (11B, XXX)"),
+            String::from("22A = (22B, XXX)"),
+            String::from("22B = (22C, 22C)"),
+            String::from("22C = (22Z, 22Z)"),
+            String::from("22Z = (22B, 22B)"),
+            String::from("XXX = (XXX, XXX)"),
+        ];
+
+        let result = part2(&input);
 
         assert_eq!(result, "6");
     }
